@@ -295,16 +295,16 @@ class ClusterYear {
 			//Loop to prevent duplicate centers
 			do {
 				randIndex = rand.nextInt(tmaxs.size());
-			} while (centers.contains(tavgs.get(randIndex)));
+			} while (centers.contains(distance(tavgs.get(randIndex), tmins.get(randIndex))));
 			
-			centers.add(tavgs.get(randIndex));
+			centers.add(distance(tavgs.get(randIndex), tmins.get(randIndex)));
 			clusters.get(i).add(randIndex);
 			System.out.println(("Initial center: " + centers.get(i)));
 		}
 		
 		//Add data to clusters based on the closest center to the data value
 		for (int i = 0; i < tavgs.size(); i++) {
-			clusters.get(getClosestCenterIndex(tavgs.get(i))).add(i);
+			clusters.get(getClosestCenterIndex(distance(tavgs.get(i), tmins.get(i)))).add(i);
 		}
 
 		//Create queues that will hold data that needs moving
@@ -324,7 +324,7 @@ class ClusterYear {
 			recomputeCenters();
 			for (int i = 0; i < k; i++) {
 				for (Integer a : clusters.get(i)) {
-					int index = getClosestCenterIndex(tavgs.get(a));
+					int index = getClosestCenterIndex(distance(tavgs.get(a),tmins.get(a)));
 					//If the index of clusters are not equal, this means a change of clusters
 					if (index != i) {
 						queues.get(index).put(i, a);
@@ -371,16 +371,16 @@ class ClusterYear {
 		for (int i = 0; i < centers.size(); i++) {
 			double sum = 0;
 			for (Integer a : clusters.get(i)) {
-				sum += tavgs.get(a);
+				sum += distance(tavgs.get(a), tmins.get(a));
 			}
 			centers.set(i, sum / clusters.get(i).size());
 		}
 	}
 
 	/**
-	 * Averages a cluster given a cluster index
+	 * Averages the max temperatures given a cluster index
 	 * @param index
-	 * @return the average of the cluster
+	 * @return the average MAX temperature of the cluster
 	 */
 	public double averageCluster(int index) {
 		double sum = 0;
@@ -403,8 +403,7 @@ class ClusterYear {
 		PrintWriter writer = new PrintWriter("KclusterPredict-" + Integer.toString(k) + ".txt", "UTF-8");
 		PrintWriter writer2 = new PrintWriter("KclusterActual-" + Integer.toString(k) + ".txt", "UTF-8");
 		for (int i = 0; i < b.getTmaxs().size(); i++) {
-			int index = getClosestCenterIndex(b.getTavgs().get(i));
-			System.out.println("Average: " + b.getTavgs().get(i) + ", Prediction: " + averageCluster(index));
+			int index = getClosestCenterIndex(distance(b.getTavgs().get(i), b.getTmins().get(i)));
 			sse += Math.pow(b.getTmaxs().get(i) - averageCluster(index), 2);
 			writer.println(averageCluster(index));
 			writer2.println(b.getTmaxs().get(i));
@@ -412,6 +411,16 @@ class ClusterYear {
 		writer.close();
 		writer2.close();
 		return sse;
+	}
+	
+	/**
+	 * Calculates the euclidean distance between two numbers
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public double distance(double a, double b){
+		return Math.sqrt(Math.pow(a, 2) - Math.pow(b, 2));
 	}
 	
 	/*
@@ -424,6 +433,10 @@ class ClusterYear {
 
 	public Vector<Double> getTavgs() {
 		return this.tavgs;
+	}
+	
+	public Vector<Double> getTmins() {
+		return this.tmins;
 	}
 
 	public Vector<Set<Integer>> getClusters() {
