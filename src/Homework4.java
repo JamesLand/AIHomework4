@@ -1,12 +1,14 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 import java.util.Vector;
 
 
 
 public class Homework4 {
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		Year a = new Year("C:/Users/Cameron_New Laptop/Documents/GitHub/AIHomework4/2015.csv");
 		Year b = new Year("C:/Users/Cameron_New Laptop/Documents/GitHub/AIHomework4/2016.csv");		
 		
@@ -14,9 +16,12 @@ public class Homework4 {
 			a.LMS();
 		}
 		b.setWeights(a.getWeights());
+		PrintWriter writer = new PrintWriter("2016predict.txt", "UTF-8");
 		for (int i = 0; i< b.getTmaxs().size();i++){
+			writer.println(b.dotProduct(i));
 			System.out.println(b.dotProduct(i));
-		}
+		}			
+		writer.close();
 	}
 
 }
