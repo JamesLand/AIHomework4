@@ -9,19 +9,31 @@ import java.util.Vector;
 
 public class Homework4 {
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-		Year a = new Year("C:/Users/Cameron_New Laptop/Documents/GitHub/AIHomework4/2015.csv");
-		Year b = new Year("C:/Users/Cameron_New Laptop/Documents/GitHub/AIHomework4/2016.csv");		
+		Year a = new Year("2015.csv");
+		Year b = new Year("2016.csv");		
 		
 		for (int i = 0; i< 1000;i++){
 			a.LMS();
 		}
 		b.setWeights(a.getWeights());
+		
 		PrintWriter writer = new PrintWriter("2016predict.txt", "UTF-8");
+		PrintWriter writer2 = new PrintWriter("2016actual.txt", "UTF-8");
+		PrintWriter writer3 = new PrintWriter("sse.txt", "UTF-8");
+		
 		for (int i = 0; i< b.getTmaxs().size();i++){
 			writer.println(b.dotProduct(i));
+			writer2.println(b.getTmaxs().get(i));
 			System.out.println(b.dotProduct(i));
-		}			
+		}		
+		
+		for (int i = 0; i < a.getSSE().size(); i++){
+			writer3.println(a.getSSE().get(i));
+		}
+		
 		writer.close();
+		writer2.close();
+		writer3.close();
 	}
 
 }
@@ -35,6 +47,8 @@ class Year{
 	private Vector<Double> tmins = new Vector<Double>();
 	
 	private Vector<Double> tavgs = new Vector<Double>();
+	
+	private Vector<Double> sse = new Vector<Double>();
 
 	private double[] weights;
 	
@@ -48,6 +62,10 @@ class Year{
 
 	public void setWeights(double[] weights) {
 		this.weights = weights;
+	}
+	
+	public Vector<Double> getSSE(){
+		return this.sse;
 	}
 	
 	public Year(String loc) throws FileNotFoundException{
@@ -89,12 +107,16 @@ class Year{
 	}
 	
 	public void LMS(){
+		double sse = 0.0;
 		for (int i = 0; i< tmaxs.size();i++){
 			double error = tmaxs.get(i) - dotProduct(i);
+			sse += Math.pow(error, 2);
 			weights[0] = weights[0] + ALPHA*error;
 			weights[1] = weights[1] + ALPHA*error*tmins.get(i);
 			weights[2] = weights[2] + ALPHA*error*tavgs.get(i);
 		}
+		//Adds the new sse value to the vector
+		this.sse.add(sse);
 	}
 	
 	public double dotProduct(int i){
