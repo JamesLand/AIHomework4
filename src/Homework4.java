@@ -224,9 +224,10 @@ class ClusterYear {
 	//List of minimum temperatures
 	private Vector<Double> tmins = new Vector<Double>();
 
-	//List of centers
-	private Vector<Double> centers = new Vector<Double>();
-
+	//Lists of centers (both avg and min values)
+	private Vector<Double> centerAvg = new Vector<Double>();
+	private Vector<Double> centerMin = new Vector<Double>();
+	
 	//List of clusters
 	private Vector<Set<Integer>> clusters;
 
@@ -295,16 +296,18 @@ class ClusterYear {
 			//Loop to prevent duplicate centers
 			do {
 				randIndex = rand.nextInt(tmaxs.size());
-			} while (centers.contains(distance(tavgs.get(randIndex), tmins.get(randIndex))));
+			} while (centerAvg.contains(tavgs.get(randIndex)));
 			
-			centers.add(distance(tavgs.get(randIndex), tmins.get(randIndex)));
+			centerAvg.add(tavgs.get(randIndex));
+			centerMin.add(tmins.get(randIndex));
+			
 			clusters.get(i).add(randIndex);
-			System.out.println(("Initial center: " + centers.get(i)));
+			System.out.println(("Initial center: " + centerAvg.get(i) + ", " + centerMin.get(i)));
 		}
 		
 		//Add data to clusters based on the closest center to the data value
 		for (int i = 0; i < tavgs.size(); i++) {
-			clusters.get(getClosestCenterIndex(distance(tavgs.get(i), tmins.get(i)))).add(i);
+			clusters.get(getClosestCenterIndex2D(tavgs.get(i), tmins.get(i))).add(i);
 		}
 
 		//Create queues that will hold data that needs moving
@@ -324,7 +327,7 @@ class ClusterYear {
 			recomputeCenters();
 			for (int i = 0; i < k; i++) {
 				for (Integer a : clusters.get(i)) {
-					int index = getClosestCenterIndex(distance(tavgs.get(a),tmins.get(a)));
+					int index = getClosestCenterIndex2D(tavgs.get(a),tmins.get(a));
 					//If the index of clusters are not equal, this means a change of clusters
 					if (index != i) {
 						queues.get(index).put(i, a);
@@ -342,20 +345,40 @@ class ClusterYear {
 				queues.get(clusterNum).clear();
 			}
 
-		} while (movements > 0 || iterations > 1000);
+		} while (movements > 0 && iterations < 1000);
 
 	}
 
+	//TODO: Spooky ghost code
+//	/**
+//	 * Finds the index of the closest center that matches the given value
+//	 * @param in
+//	 * @return the index of the closest center
+//	 */
+//	public int getClosestCenterIndex(double in) {
+//		double minDistance = Double.MAX_VALUE;
+//		int index = 0;
+//		for (int i = 0; i < centers.size(); i++) {
+//			double distance = Math.abs(in - centers.get(i));
+//			if (distance < minDistance) {
+//				minDistance = distance;
+//				index = i;
+//			}
+//		}
+//		return index;
+//	}
+	
 	/**
-	 * Finds the index of the closest center that matches the given value
-	 * @param in
+	 * Finds the index of the closest 2D center that matches the given value.
+	 * @param firstIn
+	 * @param secondIn
 	 * @return the index of the closest center
 	 */
-	public int getClosestCenterIndex(double in) {
+	public int getClosestCenterIndex2D(double firstIn, double secondIn){
 		double minDistance = Double.MAX_VALUE;
 		int index = 0;
-		for (int i = 0; i < centers.size(); i++) {
-			double distance = Math.abs(in - centers.get(i));
+		for (int i = 0; i < centerAvg.size(); i++){
+			double distance = distance(Math.abs(firstIn - centerAvg.get(i)), Math.abs(secondIn - centerMin.get(i)));
 			if (distance < minDistance) {
 				minDistance = distance;
 				index = i;
@@ -368,12 +391,15 @@ class ClusterYear {
 	 * Iterates through all centers and recalculates them based on the average
 	 */
 	public void recomputeCenters() {
-		for (int i = 0; i < centers.size(); i++) {
-			double sum = 0;
+		for (int i = 0; i < centerAvg.size(); i++) {
+			double avgSum = 0;
+			double minSum = 0;
 			for (Integer a : clusters.get(i)) {
-				sum += distance(tavgs.get(a), tmins.get(a));
+				avgSum += tavgs.get(a);
+				minSum += tmins.get(a);
 			}
-			centers.set(i, sum / clusters.get(i).size());
+			centerAvg.set(i, avgSum / clusters.get(i).size());
+			centerMin.set(i, minSum / clusters.get(i).size());
 		}
 	}
 
@@ -403,7 +429,7 @@ class ClusterYear {
 		PrintWriter writer = new PrintWriter("KclusterPredict-" + Integer.toString(k) + ".txt", "UTF-8");
 		PrintWriter writer2 = new PrintWriter("KclusterActual-" + Integer.toString(k) + ".txt", "UTF-8");
 		for (int i = 0; i < b.getTmaxs().size(); i++) {
-			int index = getClosestCenterIndex(distance(b.getTavgs().get(i), b.getTmins().get(i)));
+			int index = getClosestCenterIndex2D(b.getTavgs().get(i), b.getTmins().get(i));
 			sse += Math.pow(b.getTmaxs().get(i) - averageCluster(index), 2);
 			writer.println(averageCluster(index));
 			writer2.println(b.getTmaxs().get(i));
@@ -420,7 +446,7 @@ class ClusterYear {
 	 * @return
 	 */
 	public double distance(double a, double b){
-		return Math.sqrt(Math.pow(a, 2) - Math.pow(b, 2));
+		return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
 	}
 	
 	/*
