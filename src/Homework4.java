@@ -9,9 +9,15 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.Vector;
 
+
+/**
+ * CS 5013, Homework 4 <br>
+ * Linear Regression and K-Means Clustering
+ * @author James Land and Cameron Thornton
+ */
 public class Homework4 {
 	/**
-	 * Contains code for Part 1 of HW 4 Parses the csv files, computes LMS of
+	 * Contains code for Part 1 of HW 4. Parses the csv files, computes LMS of
 	 * year 2015, then predicts values for 2016
 	 * 
 	 * @throws FileNotFoundException
@@ -53,8 +59,12 @@ public class Homework4 {
 	}
 
 	/**
-	 * Contains the code for Part 2 of HW 4 Clusters the data from the input for
-	 * k values ranging from 2 to 7 Writes output to text files
+	 * Contains the code for Part 2 of HW 4. 
+	 * Clusters the data from the input for k values ranging from 2 to 7. 
+	 * Writes output to text files. <br><br>
+	 * Note that the code which writes output for the SSE files is located within
+	 * this method, while the code which writes output for the actual/predicted
+	 * max temperatures is located within the predict() method of the ClusterYear class.
 	 * 
 	 * @throws FileNotFoundException
 	 * @throws UnsupportedEncodingException
@@ -93,7 +103,9 @@ public class Homework4 {
 }
 
 /**
- * Class to hold data for each year when doing LMS
+ * Class to hold data for each year when doing LMS Linear Regression.
+ * Also contains methods which approximate the weights (LMS()) and predict
+ * a max temperature based on input values (dotProduct()). 
  */
 class LMSYear {
 
