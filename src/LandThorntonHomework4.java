@@ -15,7 +15,7 @@ import java.util.Vector;
  * Linear Regression and K-Means Clustering
  * @author James Land and Cameron Thornton
  */
-public class Homework4 {
+public class LandThorntonHomework4 {
 	/**
 	 * Contains code for Part 1 of HW 4. Parses the csv files, computes LMS of
 	 * year 2015, then predicts values for 2016
